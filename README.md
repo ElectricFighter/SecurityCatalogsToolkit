@@ -1,10 +1,14 @@
 # Security Catalogs Toolkit
 
-**Scope: manage Windows security catalogs (`.cat`) for standalone files pulled out of Windows Update packages.**
+**Manage Windows security catalogs (`.cat`) for standalone files pulled out of Windows Update packages.**
 
-Some Windows binaries carry no embedded Authenticode signature; they are trusted because a **security catalog** installed on the machine contains their hash and is itself signed by Microsoft. If you take a serviced file (for example `fsquirt.exe`) from one machine and drop it onto another, the file will read as *unsigned* on the target until the matching catalog is present in that machine's catalog store.
+Some Windows binaries carry no embedded Authenticode signature; they are trusted because a [**security catalog**](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/catalog-files) installed on the machine contains their hash and is itself signed by Microsoft or another trusted entity. This is common with files offered via Windows Update.
 
-This toolkit covers that end‑to‑end problem:
+When troubleshooting or working around weird behaviors introduced by a changed binary, if you take a serviced file from one machine and drop it onto another, the file will read as *unsigned* on the target unless the matching catalog has been installed in that machine's catalog store. This is not always possible as the drop-in may be part of an update package that either predates the updates available on the target (making Windows skip the install altogether) or that includes other changes that shouldn't be applied to production machines.
+
+In edge cases like these, you may want to manually add the required security catalog to make sure files have not been tampered with and pass audits.
+
+***This toolkit covers that end‑to‑end problem!***
 
 1. **Find and extract** the exact `.cat` that signs a given file, out of a Windows Update package (`.msu` / `.cab`).
 2. **Inspect** a `.cat` to confirm it really covers your file.
@@ -38,7 +42,7 @@ Every script supports `-Help` (e.g. `.\CatalogTool.ps1 -Help`) for detailed, per
 
 ## Typical workflow
 
-You have a standalone file (say `fsquirt.exe`) and the Windows Update package it came from, and you want that file to verify as signed on a target machine.
+You have a standalone file (say `fsquirt.exe`, responsible for Bluetooth send and receive interactions) and the Windows Update package it came from, and you want that file to verify as signed on a target machine.
 
 **1. Find the catalog that signs the file and copy it out**
 
