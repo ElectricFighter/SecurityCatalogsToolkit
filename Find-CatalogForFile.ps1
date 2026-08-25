@@ -397,20 +397,20 @@ Write-Host ("Extraction done: {0} package(s) in {1:n1}s.`n" -f $pkgCount, $swE.E
 $cats = @(Get-ChildItem -Path $WorkDir -Recurse -File -Include *.cat -ErrorAction SilentlyContinue)
 Write-Host "== Searching ==" -ForegroundColor Cyan
 $swS = [Diagnostics.Stopwatch]::StartNew()
-$matches = @(Search-Catalogs -Cats $cats -Needles $needles -SearchThreads $SearchThreads)
+$matched = @(Search-Catalogs -Cats $cats -Needles $needles -SearchThreads $SearchThreads)
 $swS.Stop()
 Write-Host ("`nSearch done in {0:n1}s.`n" -f $swS.Elapsed.TotalSeconds) -ForegroundColor DarkGray
 
 # report
 $origLabel = (Resolve-Path $Package).Path
-if ($matches.Count) {
+if ($matched.Count) {
     Write-Host "MATCH -- catalog(s) containing the target hash:" -ForegroundColor Green
 
     # deliver the matching catalog(s) somewhere stable so they survive cleanup (both modes)
     $delivered = @{}
     if ($OutDir) {
         New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
-        foreach ($cat in $matches) {
+        foreach ($cat in $matched) {
             $leaf = [IO.Path]::GetFileName($cat)
             $dest = Join-Path $OutDir $leaf
             $k = 1
@@ -423,7 +423,7 @@ if ($matches.Count) {
         }
     }
 
-    foreach ($cat in $matches) {
+    foreach ($cat in $matched) {
         $catChain = @(Get-ExtractChain -FilePath $cat -Origin $origin -Inner $inner)   # [..cabs.., catLeaf]
         $catPathInPkg = ($origLabel + ' » ' + ($catChain -join ' » '))
 
